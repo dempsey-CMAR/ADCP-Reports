@@ -1,0 +1,278 @@
+---
+output: 
+  word_document:
+    reference_docx: CMAR_report_template.docx
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, dpi = 600, fig.width=8)
+
+```
+
+```{r, echo=FALSE, message=FALSE}
+library(openair)
+library(ggplot2)
+library(ggspatial)
+library(sf)
+library(ggsflabel)
+library(dplyr)
+library(viridisLite)
+library(RColorBrewer)
+library(readr)
+library(lubridate)
+library(knitr)
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+county <- "Digby"
+waterbody <-"St. Mary's Bay"
+site <- "Long Beach"
+site.name <- "Long Beach"
+lease.num <- "1012"
+path <- file.path(paste("C:/Users/Kiersten Watson/Documents/ADCP Reports/2021-12-01_Process", sep = ""))
+
+ALL.loop.cm <- read_csv(paste(path, "/", "trimmed.data.csv", sep = ""))
+ALL.loop.cm<-na.omit(ALL.loop.cm)
+
+depths <- rev(unique(ALL.loop.cm$BIN_ALTITUDE))
+n_depths <-length(depths)
+year<-"2019"
+
+hist.caption <- "Histogram of current traveling from ADCP at "
+rose.caption <- "Current speeds traveling from ADCP at "
+
+k = 1 # counter for figure number
+j = 0 # counter for waterbody
+text.size <- 2
+
+pal<-colorRampPalette(c("blue","green","yellow","red"))
+
+```
+
+```{r, echo=FALSE, message=FALSE}
+# set up map params
+
+# path to NS counties shapefile
+common.path <- file.path(paste("C:/Users/Kiersten Watson/Documents/ADCP Reports/Common Data", sep = ""))
+
+# import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
+NS_raw <- read_sf(paste(common.path, "Merged_Counties2.shp", sep = "/")) %>%
+  na.omit()
+
+# add column with "1" for county of interest and "0" for other counties
+NS <- NS_raw %>%
+  mutate(COL.COUNTY = if_else(County == county, 1, 0)) %>%
+  mutate(COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0)))
+
+# extract unique station locations and convert to sf object
+dat<-read_csv(paste(common.path, "/", "2021-11-23_NSDFA_Tracking.csv", sep = ""))
+
+
+
+```
+
+
+\newpage
+
+# Introduction
+
+The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia’s coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current velocity and direction summary figures at several depths collected for **`r site.name`**, **`r county`** **County** (Figure `r k`).
+
+This document should be considered as a guide only, as data collection is ongoing. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
+
+```{r, message=FALSE, error=FALSE, echo=FALSE}
+
+ggplot() +
+  geom_sf(data = NS, col = NA, fill = NA) +
+  annotation_map_tile(type="cartolight", zoomin = 0) +
+  geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
+  scale_fill_manual(values = c("#1B9E77", NA)) +
+  fixed_plot_aspect(ratio = 2)+
+  theme(text=element_text(size = 12),
+        axis.title = element_blank()) +
+  theme(legend.position = "none")
+
+```
+`r cat('\n')`
+Figure `r k`: `r county` County (green).
+
+```{r,  message=FALSE, error=FALSE}
+k = k+1
+```
+
+```{r, message=FALSE, error=FALSE, echo=FALSE, warning=FALSE }
+
+set.seed(360)
+
+coordinates<-read.csv(paste(path,"/coordinates.csv",sep = ""),sep=",",header=T)
+
+lease<-subset(coordinates,coordinates$Type=="Site")
+adcp<-subset(coordinates,coordinates$Type=="ADCP")
+
+sample_sf<-st_as_sf(adcp, coords = c("Long", "Lat"), 
+                    crs = 4326, agr = "constant")
+
+#sample_sf<-st_as_sf(adcp, coords = c("Depl_Lon", "Depl_Lat"), 
+#                   crs = 4326, agr = "constant")
+
+
+lease_sf<-st_as_sf(lease, coords = c("Long", "Lat"), 
+                   crs = 4326, agr = "constant")%>%
+  summarise(geometry=st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+ggplot() +
+  annotation_map_tile(zoomin=0,type="cartolight") +
+  geom_sf(data=sample_sf,size=1) +
+  #geom_sf_label_repel(data=sample_sf,aes(label=Name),size=3,force=70,nudge_x=20,nudge_y=80)+
+  geom_sf(data = lease_sf,colour="black",fill=NA,size=0.75)+
+  annotation_scale(location = "br") +
+  annotation_north_arrow(location = "tr", which_north = "true")+
+  ylab("")+
+  xlab("")+
+  scale_x_continuous(expand = expansion(mult=2)) +
+  scale_y_continuous(expand = expansion(mult=2))
+
+```
+`r cat('\n')`
+Figure `r k`: `r year` ADCP deployment in `r waterbody`. The black line shows the perimeter of aquaculture lease `r lease.num`.
+
+```{r,  message=FALSE, error=FALSE}
+k = k+1
+```
+
+\newpage
+## Data Collection 
+
+CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water current velocities over a range of depths. These current meters measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the entire water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound reflecting from particles moving away from the ADCP have a slightly lower frequency than sound reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
+
+![](C:/Users/Kiersten Watson/Documents/ADCP Reports/Common Data/ADCP Schematic_NEW.jpg) 
+Figure `r k`: Schematic representation of ADCP deployment (not to scale).
+
+\newpage
+## Data Terminology & Notes
+
+Ensemble Intervals - Measurements recorded to memory in single pings at regular intervals.
+
+Averaging Intervals - Measurements recorded to memory averaged over a set period of time.
+
+Pings/Ensemble - Number of discrete sound pings per ensemble.
+
+Bin Size - Vertical segmentation of sound beams into units of consistent height.
+
+**Note:**
+All current data presented in this report are traveling away from ADCP deployments. All compass headings are relative to True North. Data included in this report have been trimmed of side-lobe interference. Bin altitudes are calculated as distance above the seafloor.
+
+
+
+\newpage
+# `r site` Current Data
+
+```{r, echo=FALSE, message=FALSE}
+
+write_ADCP_report_table<-function (dat) 
+{
+  table.out <- dat %>% select( Station = Station_Name, 
+                               `Instrument Model` = Inst_Model,
+                               Latitude = Depl_Lat, Longitude = Depl_Lon,
+                               `Deployment Date` = Depl_Date, `Recovery Date` = Recv_Date, 
+                               `Deployment Duration (d)` = Depl_Duration,
+                               `Depth (m)` = Depl_Sounding,
+                               `Ensemble intervals (s)` = Current_Ensemble_Interval_s,
+                               `Averaging intervals (s)` = Current_Averaging_Interval_s,
+                               `Pings/Ensemble` = Current_PingsPerEnsemble,
+                               `Bin Size (m)` = Bin_Size,
+                               `First Bin Range` = First_Bin_Range)%>% 
+    mutate(`Depth (m)` = as.numeric(`Depth (m)`))
+  
+  table.out
+}
+
+table <- write_ADCP_report_table(filter(dat,Station_Name== site.name ))
+
+kable(table, align = "c",
+      caption = paste("Table 1: Deployment details for ", site.name , sep = ""))
+```
+
+\newpage
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis", eval=TRUE}
+
+for(i in 1:n_depths){
+  
+  k = k+1  
+  
+  depth.i<-rev(depths[i]) #depth of interest
+  depth_dat<-ALL.loop.cm %>%filter(DEPTH == depth.i)
+  allwrd <- round(max(ALL.loop.cm$SPEED.cm)/12)
+  
+  
+  print(ggplot(depth_dat,aes(x=DIRECTION))+
+          geom_histogram(bins=12,color="black",fill="darkgrey")+
+          xlab("Heading")+
+          theme_classic())
+  
+  cat('\n')
+  
+  cat(paste("Figure ", k, ": ", hist.caption, depth.i," m below the surface at ", site, " in ", year,
+            ".",
+            sep = ""), '\n')
+  
+  cat('\n')
+  
+  k = k+1  
+  
+windRose(depth_dat, ws="SPEED.cm", wd="DIRECTION",
+           breaks = 12,
+           cols = viridis(12, option = "F"),
+           ws.int = allwrd,
+           paddle = F,
+           auto.text = F,
+           annotate = F,
+           key.header = expression(paste("Current Speed (cm s" ^ "-1" * ")"  )),
+           key.footer = "",
+           key.position = "right") +
+    scale_fill_manual(values = viridis(12), drop  =FALSE)
+  
+  cat('\n')
+  
+  cat(paste("Figure ", k, ": ", rose.caption, depth.i," m below the surface at ", site, " in ", year,
+            ".",
+            sep = ""), '\n')
+  
+  cat('\n')
+  
+}
+
+```
+\newpage
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
+k = k+1
+
+ggplot(ALL.loop.cm,aes(x=DIRECTION))+
+          geom_histogram(bins=12,color="black",fill="darkgrey")+
+          xlab("Heading")+
+          theme_classic()
+```
+Figure `r k`: Mean histogram of current traveling from ADCP at `r site` in `r year`.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
+k = k+1  
+
+allwrd <- round((max(ALL.loop.cm$SPEED.cm))/12)
+windRose(ALL.loop.cm, ws="SPEED.cm", wd="DIRECTION",
+         breaks=12,
+         cols = viridis(12, option = "F"),
+         ws.int = (allwrd),
+         paddle = F,
+         auto.text = F,
+         annotate = F,
+         key.footer = expression(paste("Current Speed (cm s" ^ "-1" * ")"  )),
+         key.position = "right")
+
+```
+Figure `r k`: Mean current rose traveling from ADCP at `r site` in `r year`.
