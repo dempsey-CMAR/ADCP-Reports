@@ -281,7 +281,7 @@ windRose(
 ) 
 
 ```
-Figure `r k`: Current speed and direction throughout the water column.
+Figure `r k`: Current speed and direction across all depths.
 
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
@@ -290,7 +290,7 @@ k <- k + 1
 adcp_plot_speed_hist(ints, bar_cols = speed_cols)
 
 ```
-Figure `r k`: Current speed distribution throughout the water column. The number of observations in each interval is noted above the bar.
+Figure `r k`: Current speed distribution across all depths. The number of observations in each interval is noted above the bar.
 
 `r knitr::knit_exit()`
 
