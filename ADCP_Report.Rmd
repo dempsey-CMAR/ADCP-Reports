@@ -153,9 +153,6 @@ ggplot() +
 Figure `r k`: `r year` ADCP deployment in `r waterbody`. The black line shows the perimeter of aquaculture lease `r lease`.
 
 
-`r knitr::knit_exit()`
-
-
 ```{r,  message=FALSE, error=FALSE}
 k <- k + 1
 ```
@@ -194,9 +191,9 @@ Bin Size - Vertical segmentation of sound beams into units of consistent height.
 Table 1: Deployment details for `r station`.
 ```{r, echo=FALSE, message=FALSE}
 
-table <- adcp_write_report_table(metadata)
-
-adcp_format_report_table(table)
+metadata %>%  
+  adcp_write_report_table() %>% 
+  adcp_format_report_table()
 
 ```
 
@@ -212,7 +209,7 @@ adcp_plot_depth(dat, geom = "line")
 ```
 Figure `r k`: ADCP sensor depth below the surface over time. 
 
-```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis", eval=TRUE}
+```{r, message=FALSE, warning=TRUE, error=FALSE, results="asis"}
 
 n_ints <- 12
 speed_cols <- viridis(n_ints, option = "F", direction = -1)
@@ -234,18 +231,6 @@ for(i in seq_along(depths)){
   
   adcp_plot_current_rose(dat.i, breaks = breaks.i, speed_cols = speed_cols)
   
-  # windRose(
-  #   dat.i, ws = "SPEED", wd = "DIRECTION",
-  #   breaks = breaks.i,
-  #   cols = speed_cols,
-  #   paddle = FALSE,
-  #   auto.text = FALSE,
-  #   annotate = FALSE,
-  #   key.header = "Current Speed (cm/s)",
-  #   key.footer = "",
-  #   key.position = "right"
-  # )
-  # 
   cat(
     glue("Figure {k}: Current speed and direction {depth.i} m above the sea floor."), '\n'
   )
@@ -271,20 +256,20 @@ for(i in seq_along(depths)){
 
 \newpage
 
-```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
+```{r, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
 k <- k + 1
 
 # intervals for current rose and bar plot
 ints <- adcp_count_obs(dat$SPEED)
 breaks <- c(ints$lower, max(ints$upper)) 
 
-adcp_plot_current_rose(dat, breaks = breaks.i, speed_cols = speed_cols)
+adcp_plot_current_rose(dat, breaks = breaks, speed_cols = speed_cols)
   
 ```
 Figure `r k`: Current speed and direction across all depths.
 
 
-```{r, echo = FALSE, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
+```{r, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
 k <- k + 1  
 
 adcp_plot_speed_hist(ints, bar_cols = speed_cols)
@@ -292,5 +277,24 @@ adcp_plot_speed_hist(ints, bar_cols = speed_cols)
 ```
 Figure `r k`: Current speed distribution across all depths. The number of observations in each interval is noted above the bar.
 
+\newpage
+
+# Document History
+
+```{r, doc-history}
+
+tibble(
+  "Version Number" = c("V1", "V2"),
+  Date = c("2021", "2022"),
+  Amendments = c(
+    "New Document", 
+    "Trimmed data of sidelobe interference. Modified figures for clarity."
+  )
+) %>% 
+  adcp_format_report_table(transpose = FALSE)
+
+```
+
 `r knitr::knit_exit()`
+
 
