@@ -98,11 +98,13 @@ The Centre for Marine Applied Research (CMAR) measures environmental parameters 
 
 This document should be considered as a guide only, as data collection is ongoing. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
 
-```{r, message=FALSE, error=FALSE, echo=FALSE}
+```{r, message=FALSE, error=FALSE}
 
 ggplot() +
   geom_sf(data = NS, col = NA, fill = NA) +
-  annotation_map_tile(type="cartolight", zoomin = 0) +
+  annotation_map_tile(
+    type="cartolight", zoomin = 0, progress = "none"
+  ) +
   geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
   scale_fill_manual(values = c("#1B9E77", NA)) +
   fixed_plot_aspect(ratio = 2)+
@@ -119,12 +121,14 @@ ggplot() +
 Figure `r k`: `r county` County (green).
 
 
-```{r, message=FALSE, error=FALSE, echo=FALSE, warning=FALSE }
+```{r, message=FALSE, warning=FALSE, error=FALSE}
 
 k <- k + 1
 
 ggplot() +
-  annotation_map_tile(zoomin = -1, type = "cartolight") +
+  annotation_map_tile(
+    zoomin = -1, type = "cartolight", progress = "none"
+  ) +
   geom_sf(data = station_buffer, fill = NA, col = NA) +
   geom_sf(data = station_coords, size = 2) +
   geom_sf(data = leases, colour = "black", fill = "white", alpha = 0.8, size = 0.75) +
@@ -147,6 +151,10 @@ ggplot() +
 ```
 `r cat('\n')`
 Figure `r k`: `r year` ADCP deployment in `r waterbody`. The black line shows the perimeter of aquaculture lease `r lease`.
+
+
+`r knitr::knit_exit()`
+
 
 ```{r,  message=FALSE, error=FALSE}
 k <- k + 1
@@ -174,7 +182,7 @@ Bin Size - Vertical segmentation of sound beams into units of consistent height.
 **Notes:**
 
   - All current data presented in this report are traveling away from the ADCP sensor.
-  - All compass headings are relative to True North. 
+  - All compass headings are relative to True North (a reading of 90 degrees is current travelling from west to east). 
   - Bin altitudes are calculated as distance above the seafloor.
   - Data included in this report have been trimmed of side-lobe interference. 
   - Current speed intervals are lower-inclusive.
@@ -224,18 +232,20 @@ for(i in seq_along(depths)){
   # generate  current rose
   k <- k + 1
   
-  windRose(
-    dat.i, ws = "SPEED", wd = "DIRECTION",
-    breaks = breaks.i,
-    cols = speed_cols,
-    paddle = FALSE,
-    auto.text = FALSE,
-    annotate = FALSE,
-    key.header = "Current Speed (cm/s)",
-    key.footer = "",
-    key.position = "right"
-  )
+  adcp_plot_current_rose(dat.i, breaks = breaks.i, speed_cols = speed_cols)
   
+  # windRose(
+  #   dat.i, ws = "SPEED", wd = "DIRECTION",
+  #   breaks = breaks.i,
+  #   cols = speed_cols,
+  #   paddle = FALSE,
+  #   auto.text = FALSE,
+  #   annotate = FALSE,
+  #   key.header = "Current Speed (cm/s)",
+  #   key.footer = "",
+  #   key.position = "right"
+  # )
+  # 
   cat(
     glue("Figure {k}: Current speed and direction {depth.i} m above the sea floor."), '\n'
   )
@@ -268,18 +278,8 @@ k <- k + 1
 ints <- adcp_count_obs(dat$SPEED)
 breaks <- c(ints$lower, max(ints$upper)) 
 
-windRose(
-  dat, ws = "SPEED", wd = "DIRECTION",
-  breaks = breaks,
-  cols = speed_cols,
-  paddle = FALSE,
-  auto.text = FALSE,
-  annotate = FALSE,
-  key.header = "Current Speed (cm/s)",
-  key.footer = "",
-  key.position = "right"
-) 
-
+adcp_plot_current_rose(dat, breaks = breaks.i, speed_cols = speed_cols)
+  
 ```
 Figure `r k`: Current speed and direction across all depths.
 
