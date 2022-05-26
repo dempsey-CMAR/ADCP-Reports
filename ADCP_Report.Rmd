@@ -46,7 +46,9 @@ adcp_file <- list.files(
   full.names = TRUE
 )
 
-dat <- read_csv(adcp_file, show_col_types = FALSE)
+dat <- read_csv(adcp_file, show_col_types = FALSE) %>% 
+  # convert SPEED to units of cm/s
+  mutate(SPEED = SPEED * 100) 
 
 depths <- unique(dat$BIN_HEIGHT_ABOVE_SEAFLOOR)
 year <- year(depl_date)
@@ -181,7 +183,7 @@ Bin Size - Vertical segmentation of sound beams into units of consistent height.
   - All compass headings are relative to True North (a reading of 90 degrees is current travelling from west to east). 
   - Bin altitudes are calculated as distance above the seafloor.
   - Data included in this report have been trimmed of side-lobe interference. 
-  - Current speed intervals are lower-inclusive.
+  - Current speed intervals are right-inclusive.
 
 \newpage
 
@@ -222,7 +224,7 @@ for(i in seq_along(depths)){
   dat.i <- filter(dat, BIN_HEIGHT_ABOVE_SEAFLOOR == depth.i)
   
   # intervals for current rose and bar plot
-  ints.i <- adcp_count_obs(dat.i$SPEED)
+  ints.i <- adcp_count_obs(dat.i$SPEED, label_sep = "\n")
   breaks.i <- c(ints.i$lower, max(ints.i$upper)) # NOT a mistake that using max(upper)
   
   # generate  current rose
