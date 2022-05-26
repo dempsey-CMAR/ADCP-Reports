@@ -4,6 +4,9 @@ output:
     reference_docx: CMAR_report_template.docx
     toc: true
     toc_depth: 3
+params:
+  station: station
+  depl_date: depl_date
 editor_options: 
   chunk_output_type: console
 ---
@@ -60,6 +63,12 @@ metadata <- adcp_read_nsdfa_metadata(
 county <- metadata$County
 waterbody <- metadata$Waterbody
 lease <- metadata$`Lease#`
+# New statement--JB.
+if(is.na(lease) || lease == "N/A"){
+  caption <- ""
+} else{
+  caption <- paste0("The black line shows the perimeter of aquaculture lease ", lease)
+}
 station_coords <- tibble(LATITUDE = metadata$Depl_Lat, LONGITUDE = metadata$Depl_Lon) 
 
 k <- 1 # counter for figure number
@@ -149,7 +158,7 @@ ggplot() +
 
 ```
 `r cat('\n')`
-Figure `r k`: `r year` ADCP deployment in `r waterbody`. The black line shows the perimeter of aquaculture lease `r lease`.
+Figure `r k`: `r year` ADCP deployment in `r waterbody`. `r caption`.
 
 
 ```{r,  message=FALSE, error=FALSE}
@@ -282,15 +291,29 @@ Figure `r k`: Current speed distribution across all depths. The number of observ
 
 ```{r, doc-history}
 
-tibble(
+V1_deployments <- c("2021-09-23 Big Pond Point", "2019-02-07 Camerons Cove", "2008-09-25 Coffin Island SW", "2010-09-02 Coffin Island SW", "2019-01-17 Grand Passage", "2020-08-27 Grand Passage", "2021-09-01 Lazares Island", "2007-07-19 Lennox Passage", "2020-06-15 The Brothers South", "2021-09-01 Walshs Deep Cove")
+
+if(paste(depl_date, station, sep = " ") %in% V1_deployments){
+  
+  tibble(
+  "Version Number" = "V1",
+  Date = "2022",
+  Amendments = "New Document"
+  ) %>%
+  adcp_format_report_table(transpose = FALSE)
+  
+} else{
+  
+  tibble(
   "Version Number" = c("V1", "V2"),
   Date = c("2021", "2022"),
   Amendments = c(
     "New Document", 
-    "Trimmed data of sidelobe interference. Modified figures for clarity."
-  )
-) %>% 
+    "Trimmed data of sidelobe interference. Modified figures for clarity.")
+  ) %>% 
   adcp_format_report_table(transpose = FALSE)
+}
+
 
 ```
 
