@@ -23,13 +23,24 @@ deployment <- data.frame(station, depl_date)
 
 # SECTION 2: GENERATE REPORTS --------------------------------------------------------
 
-sapply(1:4, function(x) {
+# sapply(1:4, function(x) {
+#
+#   rmarkdown::render(
+#     input = report,
+#     output_file = paste0(deployment$depl_date[x], "_", deployment$station[x], "_ADCP Report.docx"),
+#     params = list(station = deployment$station[x],
+#                   depl_date = deployment$depl_date[x]))
+#
+# })
 
-  rmarkdown::render(
+library(purrr)
+
+purrr::walk(
+  .x = 1:4,
+  ~ rmarkdown::render(
     input = report,
-    output_file = paste0(deployment$depl_date[x], "_", deployment$station[x], "_ADCP Report.docx"),
-    params = list(station = deployment$station[x],
-                  depl_date = deployment$depl_date[x]))
-
-})
+    output_file = paste0(deployment$depl_date[.x], "_", deployment$station[.x], "_ADCP Report.docx"),
+    params = list(station = deployment$station[.x],
+                  depl_date = deployment$depl_date[.x]))
+)
 
