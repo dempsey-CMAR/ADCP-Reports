@@ -37,8 +37,8 @@ library(viridis)
 ```{r, data-setup, message=FALSE}
 
 # path to ADCP data (shared drive)
-# path <- file.path("Z:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Process Data")
-path <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/adcp_docs/2022-05-09_Process")
+path <- file.path("Z:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Process Data")
+# path <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/adcp_docs/2022-05-09_Process")
 
 # read in ADCP data & extract useful params
 #station <- "Long Beach"    # station and depl_date can be converted to params
@@ -47,8 +47,6 @@ path <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/adcp_docs/2022-05
 station <- params$station
 depl_date <- params$depl_date
 
-if(station == "Big Gooseberry Island") depl_date <- "2020-06-15"
-if(station == "Beaver Harbour") depl_date <- "2011-10-12"
 
 adcp_file <- list.files(
   paste0(path, "/data_output"),
@@ -72,14 +70,15 @@ metadata <- adcp_read_nsdfa_metadata(
 
 county <- metadata$County
 waterbody <- metadata$Waterbody
-lease <- metadata$`Lease#`
+lease <- metadata$`Lease#` %>% as.numeric()
 
 # show extra caption if there is a lease
 if(is.na(lease)){
   caption <- ""
 } else{
-  caption <- paste0("The black line shows the perimeter of aquaculture lease ", lease)
+  caption <- paste0("The dark grey line shows the perimeter of aquaculture lease ", lease, ".")
 }
+
 station_coords <- tibble(LATITUDE = metadata$Depl_Lat, LONGITUDE = metadata$Depl_Lon)
 
 k <- 1 # counter for figure number
@@ -88,23 +87,23 @@ k <- 1 # counter for figure number
 
 ```{r, map-setup}
 
-# # import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
-# NS <- read_sf(here("shapefiles/NS/Merged_Counties2.shp")) %>%
-#   na.omit() %>%
-#   # add column with "1" for county of interest and "0" for other counties
-#   mutate(
-#     COL.COUNTY = if_else(County == county, 1, 0),
-#     COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0))
-#   )
-# 
-# leases <- read_sf(here("shapefiles/Leases/NS_leases.shp")) %>%
-#   filter(license_le == lease)
-# 
-# station_coords <- station_coords %>%
-#   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(leases))
-# 
-# station_buffer <- station_coords %>%
-#   st_buffer(units::as_units(2, 'kilometer'))
+# import NS counties shapefile and remove NA row (should have 18 rows - 1 for each county)
+NS <- read_sf(here("shapefiles/NS/Merged_Counties2.shp")) %>%
+  na.omit() %>%
+  # add column with "1" for county of interest and "0" for other counties
+  mutate(
+    COL.COUNTY = if_else(County == county, 1, 0),
+    COL.COUNTY = ordered(factor(COL.COUNTY), levels = c(1, 0))
+  )
+
+leases <- read_sf(here("shapefiles/Leases/NS_leases.shp")) %>%
+  filter(as.numeric(license_le) == lease)
+
+station_coords <- station_coords %>%
+  st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(leases))
+
+station_buffer <- station_coords %>%
+  st_buffer(units::as_units(2, 'kilometer'))
 
 ```
 
@@ -118,21 +117,21 @@ The Centre for Marine Applied Research (CMAR) measures environmental parameters 
 This document should be considered as a guide only, as data collection is ongoing. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
 
 ```{r, message=FALSE, error=FALSE}
-# 
-# ggplot() +
-#   geom_sf(data = NS, col = NA, fill = NA) +
-#   annotation_map_tile(
-#     type="cartolight", zoomin = 0, progress = "none"
-#   ) +
-#   geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
-#   scale_fill_manual(values = c("#1B9E77", NA)) +
-#   fixed_plot_aspect(ratio = 2)+
-#   theme(
-#     panel.border = element_rect(colour = "black", fill = NA, size = 1),
-#     text = element_text(size = 12),
-#     axis.title = element_blank(),
-#     legend.position = "none"
-#   )
+
+ggplot() +
+  geom_sf(data = NS, col = NA, fill = NA) +
+  annotation_map_tile(
+    type="cartolight", zoomin = 0, progress = "none"
+  ) +
+  geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
+  scale_fill_manual(values = c("#1B9E77", NA)) +
+  fixed_plot_aspect(ratio = 2)+
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, size = 1),
+    text = element_text(size = 12),
+    axis.title = element_blank(),
+    legend.position = "none"
+  )
 
 ```
 
@@ -141,35 +140,36 @@ Figure `r k`: `r county` County (green).
 
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
-# 
-# k <- k + 1
-# 
-# ggplot() +
-#   annotation_map_tile(
-#     zoomin = -1, type = "cartolight", progress = "none"
-#   ) +
-#   geom_sf(data = station_buffer, fill = NA, col = NA) +
-#   geom_sf(data = station_coords, size = 2) +
-#   geom_sf(data = leases, colour = "black", fill = "white", alpha = 0.8, size = 0.75) +
-#   geom_sf_label(
-#     data = leases,
-#     aes(label = license_le),
-#     size = 3,
-#     label.size = 0, fill = NA
-#   ) +
-#   annotation_scale(location = "br") +
-#   annotation_north_arrow(location = "tr", which_north = "true")+
-#   scale_x_continuous(n.breaks = 4, breaks = waiver()) +
-#   scale_y_continuous(n.breaks = 4) +
-#   theme(
-#     panel.border = element_rect(colour = "black", fill = NA, size = 1),
-#     text = element_text(size = 12),
-#     axis.title = element_blank()
-#   )
+
+k <- k + 1
+
+ggplot() +
+  annotation_map_tile(
+    zoomin = -1, type = "cartolight", progress = "none"
+  ) +
+  geom_sf(data = station_buffer, fill = NA, col = NA) +
+  geom_sf(data = leases, colour = "grey50", fill = "white", alpha = 0.8, size = 0.75) +
+  geom_sf(data = station_coords, size = 2) +
+  geom_sf_text_repel(
+    data = leases,
+    aes(label = license_le),
+    size = 3,
+    colour = "grey30",
+    alpha = 0.8
+  ) +
+  annotation_scale(location = "br") +
+  annotation_north_arrow(location = "tr", which_north = "true")+
+  scale_x_continuous(n.breaks = 4, breaks = waiver()) +
+  scale_y_continuous(n.breaks = 4) +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, size = 1),
+    text = element_text(size = 12),
+    axis.title = element_blank()
+  )
 
 ```
 `r cat('\n')`
-Figure `r k`: `r year` ADCP deployment in `r waterbody`. `r caption`.
+Figure `r k`: `r year` ADCP deployment in `r waterbody`. `r caption`
 
 
 ```{r,  message=FALSE, error=FALSE}
@@ -233,9 +233,9 @@ Figure `r k`: ADCP sensor depth below the surface over time.
 n_ints <- 12
 speed_cols <- viridis(n_ints, option = "F", direction = -1)
 
-# for(i in seq_along(depths)){
+for(i in seq_along(depths)){
   
-for(i in 1:3){
+# for(i in 1:3){
 
   # filter for depth of interest
   depth.i <- depths[i]

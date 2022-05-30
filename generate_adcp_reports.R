@@ -13,12 +13,13 @@ library(readxl)
 
 report <- here("ADCP_Report.Rmd")
 
-tracker <- read_xlsx("Y:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Reports/ADCP_Report_Tracker.xlsx")
+tracker <- read_xlsx("Z:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Reports/ADCP_Report_Tracker.xlsx")
+# tracker <- read_xlsx("Y:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Reports/ADCP_Report_Tracker.xlsx")
 tracker <- tracker %>%
   filter(is.na(`2022 Report (sidelobe trimmed)`))
 
-depl_date <- tracker$Depl_Date[1:2]
-station <- tracker$Open_Data_Station[1:2]
+depl_date <- tracker$Depl_Date[1:10]
+station <- tracker$Open_Data_Station[1:10]
 
 
 # SECTION 2: GENERATE REPORTS --------------------------------------------------------
