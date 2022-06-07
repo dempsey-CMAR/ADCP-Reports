@@ -1,15 +1,35 @@
 Please note:
 
 There are no reports for 2019-01-17_Grand Passage, 2007-07-19_Lennox Passage,
-and 2019-12-14_Superlease, as CMAR does not appear to have the raw data.
+and 2019-12-14_Superlease, as CMAR does not appear to have the raw data. (resolved)
 
 NSDFA tracking sheet says that 2008-07-31_Freeport may have questionable data.
+(resolved; checked and determined the data was fine)
 
 The reports for 2019-02-07_Camerons Cove, 2021-09-01_Lazares Island,
 2020-07-08_St. Peters Inlet, 2020-06-15_The Brothers South,
 2021-09-01_Walshs Deep Cove, and 2020-09-01_Woods Harbour will need to be
 redone as the caption for the station map indicates the existence of a lease
-that is not shown on the map.
+that is not shown on the map. (resolved)
+
+The close-up maps for Brier Island, Brier Island E, and Superlease need to be
+zoomed in, while those for Brandy Ledge, Center Bay, and Blandford need to be
+zoomed out. (provisional solution)
 
 Figure 30 in 2011-03-30_Brier Island and figure 56 in 2020-10-22_Cornwallis NE
-show warning messages and need to be fixed.
+show warning messages and need to be fixed. (provisional solution)
+
+Several reports show "Range_1" up to "Range_13" instead of a proper key for some
+of the current rose plots. The reports that have this problem with at least
+one plot are Spectacle Island (2007), Spectacle Island (2008), Port Mouton Island,
+Freeport, Coffin Island SW, Owl's Head, East McNutts, Jordan Bay, Borgles Island,
+Beaver Harbour, Eddy Cove Center, North Aberdeen (2017), Superlease, South Aberdeen (2018),
+Spectacle Island (2018), Ram Island, Brandy Ledge, Meal Rock, Black Island, Nyanza,
+Loon Point, Pilot Point, Prices Island, Sober Island Outlet, Blue Island,
+Outer Wine Harbour, Big Gooseberry Island, The Brothers South, Boston Rock,
+Shut-in Island, Canoe Island, Blandford, Cornwallis NE, Wolfes Island, Lazares Island,
+and Walshs Deep Cove. (provisional solution)
+
+With most of the deployments, one or more depths (usually the most shallow) will
+have only a few observations. The report for Hunts Point is an extreme example
+of this.(unresolved)
