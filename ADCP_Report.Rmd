@@ -72,13 +72,6 @@ county <- metadata$County
 waterbody <- metadata$Waterbody
 lease <- metadata$`Lease#` %>% as.numeric()
 
-# show extra caption if there is a lease
-if(is.na(lease)){
-  caption <- ""
-} else{
-  caption <- paste0("The dark grey line shows the perimeter of aquaculture lease ", lease, ".")
-}
-
 station_coords <- tibble(LATITUDE = metadata$Depl_Lat, LONGITUDE = metadata$Depl_Lon)
 
 k <- 1 # counter for figure number
@@ -98,6 +91,15 @@ NS <- read_sf(here("shapefiles/NS/Merged_Counties2.shp")) %>%
 
 leases <- read_sf(here("shapefiles/Leases/NS_leases.shp")) %>%
   filter(as.numeric(license_le) == lease)
+
+# show extra caption if there is a lease
+no_caption_leases <- c(770, 778, 967, 1181, 4031)
+
+if(is.na(lease) || lease %in% no_caption_leases){
+  caption <- ""
+} else{
+  caption <- paste0("The dark grey line shows the perimeter of aquaculture lease ", leases$license_le, ".")
+}
 
 station_coords <- station_coords %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(leases))
