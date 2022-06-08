@@ -16,7 +16,7 @@ The close-up maps for Brier Island, Brier Island E, and Superlease need to be
 zoomed in, while those for Brandy Ledge, Center Bay, and Blandford need to be
 zoomed out. (provisional solution)
 
-Figure 30 in 2011-03-30_Brier Island and figure 56 in 2020-10-22_Cornwallis NE
+Figure 31 in 2011-03-30_Brier Island and figure 57 in 2020-10-22_Cornwallis NE
 show warning messages and need to be fixed. (provisional solution)
 
 Several reports show "Range_1" up to "Range_13" instead of a proper key for some
@@ -32,4 +32,8 @@ and Walshs Deep Cove. (provisional solution)
 
 With most of the deployments, one or more depths (usually the most shallow) will
 have only a few observations. The report for Hunts Point is an extreme example
-of this.(unresolved)
+of this. (unresolved)
+
+For a few reports (such as Eddy Cove Center), the Depth row in the deployment details
+table is left blank (due to an empty entry in the NSDFA tracking sheet). When this is
+the case, the row should say "Not Recorded" instead. (unresolved)
