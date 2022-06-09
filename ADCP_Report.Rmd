@@ -197,7 +197,7 @@ k <- k + 1
 \newpage
 ## Data Collection 
 
-CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water current velocities over a range of depths. These current meters measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the entire water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound reflecting from particles moving away from the ADCP have a slightly lower frequency than sound reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
+CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water current velocities over a range of depths. These current meters measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the entire water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflecting from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
 
 ![](ADCP Schematic.jpg) 
 Figure `r k`: Schematic representation of ADCP deployment (not to scale).
@@ -271,7 +271,7 @@ for(i in seq_along(depths)){
   adcp_plot_current_rose(dat.i, breaks = breaks.i, speed_cols = speed_cols)
 
   cat(
-    glue("Figure {k}: Current speed and direction {depth.i} m above the sea floor."), '\n'
+    glue("Figure {k}: Current speed and direction {depth.i} m above the seafloor."), '\n'
   )
 
   cat('\n')
