@@ -1,13 +1,13 @@
 ---
 output:
-  html_document:
-    toc: yes
-    toc_depth: '3'
-    df_print: paged
   word_document:
     reference_docx: CMAR_report_template.docx
     toc: yes
     toc_depth: 3
+  html_document:
+    toc: yes
+    toc_depth: '3'
+    df_print: paged
 editor_options:
   chunk_output_type: console
 ---
@@ -42,7 +42,7 @@ path <- file.path("Z:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Process 
 # path <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/adcp_docs/2022-05-09_Process")
 
 # read in ADCP data & extract useful params
-station <- "Cornwallis NE"    # station and depl_date can be converted to params
+station <- "Cornwallis Ne"    # station and depl_date can be converted to params
 depl_date <- "2020-10-22"
 
 
@@ -104,12 +104,11 @@ if(is.na(lease) || lease %in% no_caption_leases){
 station_coords <- station_coords %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(leases))
 
-# Make the buffer smaller for stations with small leases, and bigger for stations further out to sea. (Move this section over to the real report template?)
+# Make the buffer smaller for stations with small leases, and bigger for stations further out to sea.
 
 zoom_in_stations <- c("Brier Island", "Brier Island E", "Superlease")
-# Review these, of course
-zoom_out_stations <- c("Brandy Ledge", "Center Bay", "Blandford")
-# Brandy Ledge may need even more zooming out
+zoom_out_stations <- c("Center Bay", "Blandford")
+# May need to include more stations, but these are the ones which needed zooming the most.
 
 if (station %in% zoom_in_stations) {
   station_buffer <- station_coords %>%
@@ -117,6 +116,9 @@ if (station %in% zoom_in_stations) {
 } else if (station %in% zoom_out_stations) {
   station_buffer <- station_coords %>%
     st_buffer(units::as_units(4, 'kilometer'))
+} else if (station == "Brandy Ledge") {
+  station_buffer <- station_coords %>%
+    st_buffer(units::as_units(5, 'kilometer'))
 } else {
   station_buffer <- station_coords %>%
     st_buffer(units::as_units(2, 'kilometer'))
@@ -135,20 +137,20 @@ This document should be considered as a guide only, as data collection is ongoin
 
 ```{r, message=FALSE, error=FALSE}
 
-ggplot() +
-  geom_sf(data = NS, col = NA, fill = NA) +
-  annotation_map_tile(
-    type="cartolight", zoomin = 0, progress = "none"
-  ) +
-  geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
-  scale_fill_manual(values = c("#1B9E77", NA)) +
-  fixed_plot_aspect(ratio = 2)+
-  theme(
-    panel.border = element_rect(colour = "black", fill = NA, size = 1),
-    text = element_text(size = 12),
-    axis.title = element_blank(),
-    legend.position = "none"
-  )
+# ggplot() +
+#   geom_sf(data = NS, col = NA, fill = NA) +
+#   annotation_map_tile(
+#     type="cartolight", zoomin = 0, progress = "none"
+#   ) +
+#   geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
+#   scale_fill_manual(values = c("#1B9E77", NA)) +
+#   fixed_plot_aspect(ratio = 2)+
+#   theme(
+#     panel.border = element_rect(colour = "black", fill = NA, size = 1),
+#     text = element_text(size = 12),
+#     axis.title = element_blank(),
+#     legend.position = "none"
+#   )
 
 ```
 
@@ -158,31 +160,31 @@ Figure `r k`: `r county` County (green).
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 
-k <- k + 1
-
-ggplot() +
-  annotation_map_tile(
-    zoomin = -1, type = "cartolight", progress = "none"
-  ) +
-  geom_sf(data = station_buffer, fill = NA, col = NA) +
-  geom_sf(data = leases, colour = "grey50", fill = "white", alpha = 0.8, size = 0.75) +
-  geom_sf(data = station_coords, size = 2) +
-  geom_sf_text_repel(
-    data = leases,
-    aes(label = license_le),
-    size = 3,
-    colour = "grey30",
-    alpha = 0.8
-  ) +
-  annotation_scale(location = "br") +
-  annotation_north_arrow(location = "tr", which_north = "true")+
-  scale_x_continuous(n.breaks = 4, breaks = waiver()) +
-  scale_y_continuous(n.breaks = 4) +
-  theme(
-    panel.border = element_rect(colour = "black", fill = NA, size = 1),
-    text = element_text(size = 12),
-    axis.title = element_blank()
-  )
+# k <- k + 1
+# 
+# ggplot() +
+#   annotation_map_tile(
+#     zoomin = -1, type = "cartolight", progress = "none"
+#   ) +
+#   geom_sf(data = station_buffer, fill = NA, col = NA) +
+#   geom_sf(data = leases, colour = "grey50", fill = "white", alpha = 0.8, size = 0.75) +
+#   geom_sf(data = station_coords, size = 2) +
+#   geom_sf_text_repel(
+#     data = leases,
+#     aes(label = license_le),
+#     size = 3,
+#     colour = "grey30",
+#     alpha = 0.8
+#   ) +
+#   annotation_scale(location = "br") +
+#   annotation_north_arrow(location = "tr", which_north = "true")+
+#   scale_x_continuous(n.breaks = 4, breaks = waiver()) +
+#   scale_y_continuous(n.breaks = 4) +
+#   theme(
+#     panel.border = element_rect(colour = "black", fill = NA, size = 1),
+#     text = element_text(size = 12),
+#     axis.title = element_blank()
+#   )
 
 ```
 `r cat('\n')`
@@ -231,18 +233,16 @@ metadata %>%
   adcp_write_report_table() %>%
   adcp_format_report_table()
 
-# The depth needs to say "Not Recorded" whenever it is blank, but this is best done in the adcp_write_report_table function.
-
 ```
 
 
 ```{r, fig.height=3.5}
 
-cat('\n')
-
-k <- k + 1
-  
-adcp_plot_depth(dat, geom = "line") 
+# cat('\n')
+# 
+# k <- k + 1
+#   
+# adcp_plot_depth(dat, geom = "line") 
 
 ```
 Figure `r k`: ADCP sensor depth below the surface over time. 
@@ -254,23 +254,24 @@ speed_cols <- viridis(n_ints, option = "F", direction = -1)
 
 # for(i in seq_along(depths)){
   
-for(i in 24:28){
+for(i in 1:4){
 
   # filter for depth of interest
   depth.i <- depths[i]
   dat.i <- filter(dat, BIN_HEIGHT_ABOVE_SEAFLOOR == depth.i)
 
   # intervals for current rose and bar plot
-  ints.i <- adcp_count_obs(dat.i$SPEED, label_sep = "\n")
+  ints.i <- adcp_count_obs(dat.i, SPEED)
   
-  breaks.i <- c(ints.i$lower - 0.000001, max(ints.i$upper) + 0.000001) # NOT a mistake that using max(upper)
-  
-  if(breaks.i[1] < 1e-4) {
-    breaks.i[1] <- 0
-  }
+  breaks.i <- c(ints.i$lower, max(ints.i$upper)) # NOT a mistake that using max(upper)
+    
+# Here is a way to solve the range and warning problems manually:
+  #    breaks.i <- c(ints.i$lower - 0.000001, max(ints.i$upper) + 0.000001) # NOT a mistake that using max(upper)
+  # 
+  # if(breaks.i[1] < 1e-4) {
+  #   breaks.i[1] <- 0
+  # }
 
-  
-  # NOTE: subtracting and adding 0.000001 solves the warning message issue and the "range" issue, but it is not a perfect solution. It would be better if we could change the package.
 
   # generate  current rose
   k <- k + 1
@@ -323,7 +324,7 @@ for(i in 24:28){
 k <- k + 1
 
 # intervals for current rose and bar plot
-ints <- adcp_count_obs(dat$SPEED)
+ints <- adcp_count_obs(dat, SPEED)
 breaks <- c(ints$lower, max(ints$upper))
 
 adcp_plot_current_rose(dat, breaks = breaks, speed_cols = speed_cols)
