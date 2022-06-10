@@ -14,8 +14,8 @@ tracker <- read_xlsx("Z:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Repor
 tracker <- tracker %>%
   filter(is.na(`2022 Report (sidelobe trimmed)`))
 
-depl_date <- tracker$Depl_Date[1:10]
-station <- tracker$Open_Data_Station[1:10]
+depl_date <- tracker$Depl_Date[]
+station <- tracker$Open_Data_Station[]
 
 
 # SECTION 2: Generate Reports --------------------------------------------------

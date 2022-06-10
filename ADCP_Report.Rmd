@@ -130,9 +130,9 @@ if (station %in% zoom_in_stations) {
 
 # Introduction
 
-The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia’s coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current velocity and direction summary figures at several depths collected for **`r station`**, **`r county`** **County** (Figure `r k`).
+The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia’s coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current speed and direction summary figures at several depths collected for **`r station`**, **`r county`** **County** (Figure `r k`).
 
-This document should be considered as a guide only, as data collection is ongoing. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
+This document should be considered as a guide only. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
 
 ```{r, message=FALSE, error=FALSE}
 
@@ -197,7 +197,7 @@ k <- k + 1
 \newpage
 ## Data Collection 
 
-CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water current velocities over a range of depths. These current meters measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the entire water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflected from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
+CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water velocities over a range of depths. These sensors measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflected from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
 
 ![](ADCP Schematic.jpg) 
 Figure `r k`: Schematic representation of ADCP deployment (not to scale).
