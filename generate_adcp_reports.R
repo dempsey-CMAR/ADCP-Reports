@@ -1,15 +1,11 @@
-# This script generates ADCP reports for all stations and dates.
-
-# SECTION 1: Specify stations and dates for which to generate report
-
-# SECTION 2: Generate report(s)
+# This script can generate ADCP reports for all deployments.
 
 library(dplyr)
 library(here)
 library(readxl)
 
 
-# SECTION 1: Specify deployments ---------------------------------------------
+# SECTION 1: Specify deployments -----------------------------------------------
 
 report <- here("ADCP_Report.Rmd")
 
@@ -22,7 +18,7 @@ depl_date <- tracker$Depl_Date[]
 station <- tracker$Open_Data_Station[]
 
 
-# SECTION 2: GENERATE REPORTS --------------------------------------------------------
+# SECTION 2: Generate Reports --------------------------------------------------
 
 mapply(function(x, y) {
 

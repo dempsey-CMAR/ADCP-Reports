@@ -73,13 +73,6 @@ county <- metadata$County
 waterbody <- metadata$Waterbody
 lease <- metadata$`Lease#` %>% as.numeric()
 
-# show extra caption if there is a lease
-if(is.na(lease)){
-  caption <- ""
-} else{
-  caption <- paste0("The dark grey line shows the perimeter of aquaculture lease ", lease, ".")
-}
-
 station_coords <- tibble(LATITUDE = metadata$Depl_Lat, LONGITUDE = metadata$Depl_Lon)
 
 k <- 1 # counter for figure number
@@ -100,11 +93,35 @@ NS <- read_sf(here("shapefiles/NS/Merged_Counties2.shp")) %>%
 leases <- read_sf(here("shapefiles/Leases/NS_leases.shp")) %>%
   filter(as.numeric(license_le) == lease)
 
+# show extra caption if there is a lease
+no_caption_leases <- c(770, 778, 967, 1181, 4031)
+
+if(is.na(lease) || lease %in% no_caption_leases){
+  caption <- ""
+} else{
+  caption <- paste0("The dark grey line shows the perimeter of aquaculture lease ", leases$license_le, ".")
+}
+
 station_coords <- station_coords %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(leases))
 
-station_buffer <- station_coords %>%
-  st_buffer(units::as_units(2, 'kilometer'))
+# Make the buffer smaller for stations with small leases, and bigger for stations further out to sea
+zoom_in_stations <- c("Brier Island", "Brier Island E", "Superlease")
+zoom_out_stations <- c("Center Bay", "Blandford")
+
+if (station %in% zoom_in_stations) {
+  station_buffer <- station_coords %>%
+    st_buffer(units::as_units(1.5, 'kilometer'))
+} else if (station %in% zoom_out_stations) {
+  station_buffer <- station_coords %>%
+    st_buffer(units::as_units(4, 'kilometer'))
+} else if (station == "Brandy Ledge") {
+  station_buffer <- station_coords %>%
+    st_buffer(units::as_units(5, 'kilometer'))
+} else {
+  station_buffer <- station_coords %>%
+    st_buffer(units::as_units(2, 'kilometer'))
+}
 
 ```
 
@@ -113,9 +130,9 @@ station_buffer <- station_coords %>%
 
 # Introduction
 
-The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia’s coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current velocity and direction summary figures at several depths collected for **`r station`**, **`r county`** **County** (Figure `r k`).
+The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia’s coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current speed and direction summary figures at several depths collected for **`r station`**, **`r county`** **County** (Figure `r k`).
 
-This document should be considered as a guide only, as data collection is ongoing. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
+This document should be considered as a guide only. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
 
 ```{r, message=FALSE, error=FALSE}
 
@@ -180,7 +197,7 @@ k <- k + 1
 \newpage
 ## Data Collection 
 
-CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water current velocities over a range of depths. These current meters measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the entire water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound reflecting from particles moving away from the ADCP have a slightly lower frequency than sound reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
+CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water velocities over a range of depths. These sensors measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflected from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
 
 ![](ADCP Schematic.jpg) 
 Figure `r k`: Schematic representation of ADCP deployment (not to scale).
@@ -245,7 +262,7 @@ for(i in seq_along(depths)){
   dat.i <- filter(dat, BIN_HEIGHT_ABOVE_SEAFLOOR == depth.i)
 
   # intervals for current rose and bar plot
-  ints.i <- adcp_count_obs(dat.i$SPEED, label_sep = "\n")
+  ints.i <- adcp_count_obs(dat.i, SPEED)
   breaks.i <- c(ints.i$lower, max(ints.i$upper)) # NOT a mistake that using max(upper)
 
   # generate  current rose
@@ -254,7 +271,7 @@ for(i in seq_along(depths)){
   adcp_plot_current_rose(dat.i, breaks = breaks.i, speed_cols = speed_cols)
 
   cat(
-    glue("Figure {k}: Current speed and direction {depth.i} m above the sea floor."), '\n'
+    glue("Figure {k}: Current speed and direction {depth.i} m above the seafloor."), '\n'
   )
 
   cat('\n')
@@ -282,7 +299,7 @@ for(i in seq_along(depths)){
 k <- k + 1
 
 # intervals for current rose and bar plot
-ints <- adcp_count_obs(dat$SPEED)
+ints <- adcp_count_obs(dat, SPEED)
 breaks <- c(ints$lower, max(ints$upper))
 
 adcp_plot_current_rose(dat, breaks = breaks, speed_cols = speed_cols)
