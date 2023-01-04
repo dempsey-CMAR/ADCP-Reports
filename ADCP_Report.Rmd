@@ -5,8 +5,8 @@ output:
     toc: true
     toc_depth: 3
 params: 
-  station: station 
-  depl_date: depl_date
+  dat: dat
+  metadata: metadata
 editor_options: 
   chunk_output_type: console
 ---
@@ -26,54 +26,38 @@ library(ggspatial)
 library(here)
 library(knitr)
 library(lubridate)
-library(readr)
+library(readxl)
 library(sf)
 library(viridis)
-
 ```
-
 
 ```{r, data-setup, message=FALSE}
 
-# path to ADCP data (shared drive)
-path <- file.path("Z:/Coastal Monitoring Program/ADCP/Side Lobe Trimmed/Process Data")
-# path <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/adcp_docs/2022-05-09_Process")
-
-# read in ADCP data & extract useful params
-#station <- "Long Beach"    # station and depl_date can be converted to params
-#depl_date <- "2019-01-17"
-
-station <- params$station
-depl_date <- params$depl_date
-
-
-adcp_file <- list.files(
-  paste0(path, "/data_output"),
-  pattern = glue("{depl_date}_{station}"), 
-  full.names = TRUE
-)
-
-
-dat <- read_csv(adcp_file, show_col_types = FALSE) %>%
+dat <- params$dat %>% 
   # convert SPEED to units of cm/s
   # add round() to avoid floating point error
-  mutate(SPEED = round(SPEED * 100, digits = 2))
+  mutate(sea_water_speed_cm_s = round(sea_water_speed_m_s * 100, digits = 2)) %>% 
+  select(-sea_water_speed_m_s)
 
+station <- unique(dat$station)
+depl_date <- as_date(min(dat$timestamp_utc))
 
-depths <- unique(dat$BIN_HEIGHT_ABOVE_SEAFLOOR)
+depths <- unique(dat$bin_height_above_sea_floor_m)
 year <- year(depl_date)
 
 # read in metadata & extract useful params
-metadata <- adcp_read_nsdfa_metadata(
-  paste0(path, "/tracking/2022-03-17 - NSDFA Tracking Sheet.xlsx")
-) %>%
-  filter(Station_Name == station, Depl_Date == depl_date)
+metadata <- params$metadata
 
 county <- metadata$County
 waterbody <- metadata$Waterbody
-lease <- metadata$`Lease#` %>% as.numeric()
+lease <- suppressWarnings(metadata$`Lease#` %>% as.numeric())
 
 station_coords <- tibble(LATITUDE = metadata$Depl_Lat, LONGITUDE = metadata$Depl_Lon)
+
+# document history
+hist <- read_excel("Y:/coastal_monitoring_program/tracking_sheets/current_report_tracker.xlsx") %>% 
+  filter(Station == station, Depl_Date == depl_date) %>% 
+  select(Version, Date, Amendments)
 
 k <- 1 # counter for figure number
 
@@ -107,7 +91,7 @@ station_coords <- station_coords %>%
 
 # Make the buffer smaller for stations with small leases, and bigger for stations further out to sea
 zoom_in_stations <- c("Brier Island", "Brier Island E", "Superlease")
-zoom_out_stations <- c("Center Bay", "Blandford")
+zoom_out_stations <- c("Center Bay", "Blandford", "Western Shoal")
 
 if (station %in% zoom_in_stations) {
   station_buffer <- station_coords %>%
@@ -115,7 +99,7 @@ if (station %in% zoom_in_stations) {
 } else if (station %in% zoom_out_stations) {
   station_buffer <- station_coords %>%
     st_buffer(units::as_units(4, 'kilometer'))
-} else if (station == "Brandy Ledge") {
+} else if (station == "Brandy Ledge" | station == "Angus Shoal") {
   station_buffer <- station_coords %>%
     st_buffer(units::as_units(5, 'kilometer'))
 } else {
@@ -125,12 +109,11 @@ if (station %in% zoom_in_stations) {
 
 ```
 
-
 \newpage
 
 # Introduction
 
-The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia’s coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current speed and direction summary figures at several depths collected for **`r station`**, **`r county`** **County** (Figure `r k`).
+The Centre for Marine Applied Research (CMAR) measures environmental parameters throughout Nova Scotia's coastal waters to inform coastal ocean users. The Nova Scotia Department of Fisheries and Aquaculture (NSDFA) and CMAR have deployed Acoustic Doppler Current Profilers (ADCP, current meters) at a variety of locations since 2007. This document presents deployment details with current speed and direction summary figures at several depths collected for **`r station`**, **`r county`** **County** (Figure `r k`).
 
 This document should be considered as a guide only. The information may be revised pending ongoing data collection and analyses. For more information on CMAR and current meter deployments, visit the [CMAR website](https://cmar.ca/).
 
@@ -141,11 +124,11 @@ ggplot() +
   annotation_map_tile(
     type="cartolight", zoomin = 0, progress = "none"
   ) +
-  geom_sf(data = NS, col = "black", size = 0.05, aes(fill = COL.COUNTY)) +
+  geom_sf(data = NS, col = "black", linewidth = 0.05, aes(fill = COL.COUNTY)) +
   scale_fill_manual(values = c("#1B9E77", NA)) +
   fixed_plot_aspect(ratio = 2)+
   theme(
-    panel.border = element_rect(colour = "black", fill = NA, size = 1),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
     text = element_text(size = 12),
     axis.title = element_blank(),
     legend.position = "none"
@@ -153,9 +136,7 @@ ggplot() +
 
 ```
 
-`r cat('\n')`
-Figure `r k`: `r county` County (green).
-
+`r cat('\n')` Figure `r k`: `r county` County (green).
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE}
 
@@ -166,8 +147,8 @@ ggplot() +
     zoomin = -1, type = "cartolight", progress = "none"
   ) +
   geom_sf(data = station_buffer, fill = NA, col = NA) +
-  geom_sf(data = leases, colour = "grey50", fill = "white", alpha = 0.8, size = 0.75) +
-  geom_sf(data = station_coords, size = 2) +
+  geom_sf(data = leases, colour = "grey50", fill = "white", alpha = 0.8, linewidth = 0.75) +
+  geom_sf(data = station_coords, linewidth = 2) +
   geom_sf_text_repel(
     data = leases,
     aes(label = license_le),
@@ -186,48 +167,49 @@ ggplot() +
   )
 
 ```
-`r cat('\n')`
-Figure `r k`: `r year` ADCP deployment in `r waterbody`. `r caption`
 
+`r cat('\n')` Figure `r k`: `r year` ADCP deployment in `r waterbody`. `r caption`
 
 ```{r,  message=FALSE, error=FALSE}
 k <- k + 1
 ```
 
 \newpage
-## Data Collection 
 
-CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water velocities over a range of depths. These sensors measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the water column (Figure `r k`). ADCPs transmit ultrasonic “pings” of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflected from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument.  The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement. 
+## Data Collection
 
-![](ADCP Schematic.jpg) 
-Figure `r k`: Schematic representation of ADCP deployment (not to scale).
+CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water velocities over a range of depths. These sensors measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the water column (Figure `r k`). ADCPs transmit ultrasonic "pings" of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflected from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument. The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement.
+
+![](ADCP%20Schematic.jpg) Figure `r k`: Schematic representation of ADCP deployment (not to scale).
 
 \newpage
+
 ## Data Terminology & Notes
 
 **Terminology:**
 
-  - Ping: sound generated by the ADCP transducer for a single measurement.
-  - Ensemble: a group of averaged measurements (pings). 
-  - Averaging Interval: set period of time over which measurements (pings) are averaged.
-  - Pings per Ensemble: number of measurements (pings) per ensemble.
-  - Bin Size: vertical segmentation of sound beams into units of consistent height.
+-   Ping: sound generated by the ADCP transducer for a single measurement.
+-   Ensemble: a group of averaged measurements (pings).
+-   Averaging Interval: set period of time over which measurements (pings) are averaged.
+-   Pings per Ensemble: number of measurements (pings) per ensemble.
+-   Bin Size: vertical segmentation of sound beams into units of consistent height.
 
 **Notes:**
 
-  - All current data presented in this report are traveling away from the ADCP sensor.
-  - All compass headings are relative to True North (a reading of 90 degrees is current travelling from west to east). 
-  - Bin altitudes are calculated as distance above the seafloor.
-  - Data included in this report have been trimmed of side-lobe interference. 
-  - Current speed intervals presented in the figures are right-inclusive (a value of 4 is assigned to the interval "1 to 4"). 
-  - For each depth bin, break points are automatically calculated to generate 12 even speed intervals.
-  - Figures are arranged from deepest to shallowest. The final figures show current speed and direction across all depths.
+-   All current data presented in this report are traveling away from the ADCP sensor.
+-   All compass headings are relative to True North (a reading of 90 degrees is current travelling from west to east).
+-   Bin altitudes are calculated as distance above the seafloor.
+-   Data included in this report have been trimmed of side-lobe interference.
+-   Current speed intervals presented in the figures are right-inclusive (a value of 4 is assigned to the interval "1 to 4").
+-   For each depth bin, break points are automatically calculated to generate 12 even speed intervals.
+-   Figures are arranged from deepest to shallowest. The final figures show current speed and direction across all depths.
 
 \newpage
 
 # `r station` Current Data
 
 Table 1: Deployment details for `r station`.
+
 ```{r, echo=FALSE, message=FALSE}
 
 metadata %>%
@@ -235,7 +217,6 @@ metadata %>%
   adcp_format_report_table()
 
 ```
-
 
 ```{r, fig.height=3.5}
 
@@ -246,7 +227,8 @@ k <- k + 1
 adcp_plot_depth(dat, geom = "line") 
 
 ```
-Figure `r k`: ADCP sensor depth below the surface over time. 
+
+Figure `r k`: ADCP sensor depth below the surface over time.
 
 ```{r, message=FALSE, warning=TRUE, error=FALSE, results="asis"}
 
@@ -259,10 +241,10 @@ for(i in seq_along(depths)){
 
   # filter for depth of interest
   depth.i <- depths[i]
-  dat.i <- filter(dat, BIN_HEIGHT_ABOVE_SEAFLOOR == depth.i)
+  dat.i <- filter(dat, bin_height_above_sea_floor_m == depth.i)
 
   # intervals for current rose and bar plot
-  ints.i <- adcp_count_obs(dat.i, SPEED)
+  ints.i <- adcp_count_obs(dat.i, sea_water_speed_cm_s)
   breaks.i <- c(ints.i$lower, max(ints.i$upper)) # NOT a mistake that using max(upper)
 
   # generate  current rose
@@ -299,14 +281,14 @@ for(i in seq_along(depths)){
 k <- k + 1
 
 # intervals for current rose and bar plot
-ints <- adcp_count_obs(dat, SPEED)
+ints <- adcp_count_obs(dat, sea_water_speed_cm_s)
 breaks <- c(ints$lower, max(ints$upper))
 
 adcp_plot_current_rose(dat, breaks = breaks, speed_cols = speed_cols)
   
 ```
-Figure `r k`: Current speed and direction across all depths.
 
+Figure `r k`: Current speed and direction across all depths.
 
 ```{r, message=FALSE, warning=FALSE, error=FALSE, results="asis"}
 k <- k + 1  
@@ -314,6 +296,7 @@ k <- k + 1
 adcp_plot_speed_hist(ints, bar_cols = speed_cols)
 
 ```
+
 Figure `r k`: Current speed distribution across all depths. The number of observations in each interval is noted above the bar.
 
 \newpage
@@ -321,43 +304,5 @@ Figure `r k`: Current speed distribution across all depths. The number of observ
 # Document History
 
 ```{r, doc-history}
-
-V1_deployments <- c(
-  "2007-07-19 Lennox Passage",
-  "2008-09-25 Coffin Island SW",
-  "2010-09-02 Coffin Island SW",
-  "2019-01-17 Grand Passage",
-  "2019-02-07 Camerons Cove",
-  "2020-06-15 The Brothers South",
-  "2020-08-27 Grand Passage",
-  "2021-09-01 Lazares Island",
-  "2021-09-01 Walshs Deep Cove",
-  "2021-09-23 Big Pond Point"
-)
-
-if(paste(depl_date, station, sep = " ") %in% V1_deployments){
-
-  tibble(
-  "Version Number" = "V1",
-  Date = "2022",
-  Amendments = "New Document"
-  ) %>%
-  adcp_format_report_table(transpose = FALSE)
-
-} else{
-
-  tibble(
-  "Version Number" = c("V1", "V2"),
-  Date = c("2021", "2022"),
-  Amendments = c(
-    "New Document",
-    "Trimmed data of sidelobe interference. Modified figures for clarity.")
-  ) %>%
-  adcp_format_report_table(transpose = FALSE)
-}
-
-
+adcp_format_report_table(hist, transpose = FALSE)
 ```
-
-
-
