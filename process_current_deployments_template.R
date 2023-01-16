@@ -2,15 +2,15 @@
 # NAME: DD
 # NOTES:
 
-# This template reads in ADCP txt files and exports formatted csv file AND generates the
-# report for each deployment
+# This template reads in ADCP txt files and exports formatted csv file
+## AND generates the report for each deployment
 
 # The `ADCP Reports` repository downloaded
 # Make sure deployments are included in the NSDFA tracking sheet, ADCP TRACKING
 # sheet, and the current_report_tracker.xlsx
 
 
-library(adcp)           # adcp datawrangling and visualization
+library(adcp)           # adcp data wrangling and visualization
 library(data.table)     # fast data export
 library(dplyr)          # data wrangling
 library(ggplot2)        # export ggplots
@@ -19,10 +19,13 @@ library(googlesheets4)  # read in deployment IDs
 # UPDATE FILE PATHS ------------------------------------------------------------
 
 # path to raw data -- update this
-path_import <- file.path("Y:/coastal_monitoring_program/data_branches/current/raw_data/2023-01-03_process")
+path_import <- file.path(
+  "Y:/coastal_monitoring_program/data_branches/current/raw_data/2023-01-03_process")
 
 # path to most recent NSDFA tracking sheet -- update this
-path_nsdfa <- file.path("Y:/coastal_monitoring_program/tracking_sheets/2022-12-19 - NSDFA Tracking Sheet.xlsx")
+path_nsdfa <- file.path(
+  "Y:/coastal_monitoring_program/tracking_sheets/2022-12-19 - NSDFA Tracking Sheet.xlsx"
+)
 
 # path to report rmd -- update this
 path_rmd <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/ADCP Reports/ADCP_Report.Rmd")
@@ -39,7 +42,7 @@ path_report <- file.path("Y:/coastal_monitoring_program/program_documents/websit
 # read in files --------------------------------------------------
 
 # nsdfa tracking sheet
-nsdfa <- adcp_read_nsdfa_metadata(path_nsdfa)
+tracking <- adcp_read_nsdfa_metadata(path_nsdfa)
 
 # raw data
 files <- list.files(
@@ -49,23 +52,23 @@ files <- list.files(
 
 # this section should change -- or be deleted -- with new tracking sheet ----------------------
 
-# deployment ids -- won't need this is depl_id added to NSDFA tracking
-link <- "https://docs.google.com/spreadsheets/d/1DVfJbraoWL-BW8-Aiypz8GZh1sDS6-HtYCSrnOSW07U/edit#gid=0"
+# # deployment ids -- won't need this is depl_id added to NSDFA tracking
+# link <- "https://docs.google.com/spreadsheets/d/1DVfJbraoWL-BW8-Aiypz8GZh1sDS6-HtYCSrnOSW07U/edit#gid=0"
+#
+# depl_id <- googlesheets4::read_sheet(link, sheet = "Tracking") %>%
+#   select(
+#     Depl_ID = depl_id,
+#     County = county,
+#     Waterbody = waterbody,
+#     Station_Name = station,
+#     Depl_Date = depl_date
+#   )
 
-depl_id <- googlesheets4::read_sheet(link, sheet = "Tracking") %>%
-  select(
-    Depl_ID = depl_id,
-    County = county,
-    Waterbody = waterbody,
-    Station_Name = station,
-    Depl_Date = depl_date
-  )
-
-tracking <- nsdfa %>%
-  left_join(depl_id, by = c("County", "Waterbody", "Depl_Date", "Station_Name"))
+# tracking <- nsdfa %>%
+#   left_join(depl_id, by = c("County", "Waterbody", "Depl_Date", "Station_Name"))
 
 # compile for Open Data Portal --------------------------------------------
-
+# using j as index so does not get mixed up with index in ADCP Report.Rmd
 for(j in seq_along(files)) {
 
   file.j <- files[j]
