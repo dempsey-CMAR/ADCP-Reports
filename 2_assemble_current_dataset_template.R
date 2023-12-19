@@ -19,7 +19,7 @@ library(purrr)
 
 # SECTION 1: Define counties and submission date --------------------------
 
-county <- ""
+county <- "victoria"
 file_date <- as.character(Sys.Date())
 
 path <- file.path("Y:/coastal_monitoring_program/data_branches/current")
@@ -41,7 +41,8 @@ dat_raw <- list.files(
   paste0(path, "/processed_data/deployment_data/", county), pattern = "csv", full.names = TRUE
 ) %>%
   unlist() %>%
-  map_dfr(fread)
+  map_dfr(fread) %>%
+  select(-depth_flag)
 
 # Make csv and rds files
 file_name <- paste(county, file_date, sep = "_")

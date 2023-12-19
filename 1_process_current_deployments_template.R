@@ -20,11 +20,11 @@ library(googlesheets4)  # read in deployment IDs
 
 # path to raw data -- update this
 path_import <- file.path(
-  "Y:/coastal_monitoring_program/data_branches/current/raw_data/2023-01-03_process")
+  "R:/data_branches/current/raw_data/2023-01-03_process")
 
 # path to most recent NSDFA tracking sheet -- update this
 path_nsdfa <- file.path(
-  "Y:/coastal_monitoring_program/tracking_sheets/2022-12-19 - NSDFA Tracking Sheet.xlsx"
+  "R:/tracking_sheets/2022-12-19 - NSDFA Tracking Sheet.xlsx"
 )
 
 # path to report rmd -- update this
@@ -34,10 +34,10 @@ path_rmd <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/ADCP Reports/
 # leave these -------------------------------------------------------------
 
 # path to data export
-path_export <- file.path("Y:/coastal_monitoring_program/data_branches/current/processed_data/deployment_data")
+path_export <- file.path("R:/data_branches/current/processed_data/deployment_data")
 
 # path to generated report
-path_report <- file.path("Y:/coastal_monitoring_program/program_documents/website_documents/current_reports/drafts/")
+path_report <- file.path("R:/program_documents/website_documents/current_reports/drafts/")
 
 # read in files --------------------------------------------------
 
@@ -168,9 +168,9 @@ for(j in seq_along(files)) {
     input = path_rmd,
     output_file = paste0(
       path_report, "/",
+      tracking.j$Depl_ID, "_",
       d.j$Station_Name, "_",
       d.j$Depl_Date, "_",
-      tracking.j$Depl_ID,
       "_Current_Report.docx"
     ),
     params = list(dat = depl.j, metadata = tracking.j)

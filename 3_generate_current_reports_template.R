@@ -16,12 +16,12 @@ library(dplyr)          # data wrangling
 
 # path to the common folder with data to be processed
 path_import <- file.path(
-  "Y:/coastal_monitoring_program/data_branches/current/processed_data/deployment_data"
+  "R:/data_branches/current/processed_data/deployment_data"
 )
 
 # path to most recent NSDFA tracking sheet -- update this
 path_nsdfa <- file.path(
-  "Y:/coastal_monitoring_program/tracking_sheets/2023-01-09 - NSDFA Tracking Sheet.xlsx"
+  "R:/tracking_sheets/2023-11-27 - NSDFA Tracking Sheet.xlsx"
 )
 
 # path to report rmd -- update this
@@ -30,7 +30,7 @@ path_rmd <- file.path("C:/Users/Danielle Dempsey/Desktop/RProjects/ADCP Reports/
 # leave these -------------------------------------------------------------
 
 # path to generated report
-path_report <- file.path("Y:/coastal_monitoring_program/program_documents/website_documents/current_reports/drafts/")
+path_report <- file.path("R:/program_documents/website_documents/current_reports/drafts/")
 
 # read in files --------------------------------------------------
 
@@ -38,16 +38,16 @@ path_report <- file.path("Y:/coastal_monitoring_program/program_documents/websit
 tracking <- adcp_read_nsdfa_metadata(path_nsdfa)
 
 # raw data
-files <- c(
-  file.path(paste0(path_import, "/digby/new/2022-09-13_Long Beach_DG013.csv")),
-  file.path(paste0(path_import, "/yarmouth/new/2022-09-29_Angus Shoal_YR008.csv")),
-  file.path(paste0(path_import, "/yarmouth/new/2022-09-29_Western Shoal_YR009.csv"))
-)
+# files <- c(
+#   file.path(paste0(path_import, "/digby/new/2022-09-13_Long Beach_DG013.csv")),
+#   file.path(paste0(path_import, "/yarmouth/new/2022-09-29_Angus Shoal_YR008.csv")),
+#   file.path(paste0(path_import, "/yarmouth/new/2022-09-29_Western Shoal_YR009.csv"))
+# )
 
 
 # generate reports ---------------------------------------------------------
 
-for (j in 2:length(files)) {
+for (j in 1:length(files)) {
 
   depl.j <- fread(files[j])
 
@@ -63,9 +63,9 @@ for (j in 2:length(files)) {
     input = path_rmd,
     output_file = paste0(
       path_report, "/",
+      tracking.j$Depl_ID,
       d.j$Station_Name, "_",
       d.j$Depl_Date, "_",
-      tracking.j$Depl_ID,
       "_Current_Report.docx"
     ),
     params = list(dat = depl.j, metadata = tracking.j)

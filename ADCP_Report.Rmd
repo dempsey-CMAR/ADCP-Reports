@@ -55,7 +55,7 @@ lease <- suppressWarnings(metadata$`Lease#` %>% as.numeric())
 station_coords <- tibble(LATITUDE = metadata$Depl_Lat, LONGITUDE = metadata$Depl_Lon)
 
 # document history
-hist <- read_excel("Y:/coastal_monitoring_program/tracking_sheets/current_report_tracker.xlsx") %>% 
+hist <- read_excel("R:/tracking_sheets/current_report_tracker.xlsx") %>% 
   filter(Station == station, Depl_Date == depl_date) %>% 
   select(Version, Date, Amendments)
 
@@ -78,7 +78,7 @@ leases <- read_sf(here("shapefiles/Leases/NS_leases.shp")) %>%
   filter(as.numeric(license_le) == lease)
 
 # show extra caption if there is a lease
-no_caption_leases <- c(770, 778, 967, 1181, 4031)
+no_caption_leases <- c(770, 778, 967, 1181, 4031, 1438, 1439)
 
 if(is.na(lease) || lease %in% no_caption_leases){
   caption <- ""
@@ -90,7 +90,7 @@ station_coords <- station_coords %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(leases))
 
 # Make the buffer smaller for stations with small leases, and bigger for stations further out to sea
-zoom_in_stations <- c("Brier Island", "Brier Island E", "Superlease")
+zoom_in_stations <- c("Brier Island", "Brier Island E", "Superlease", "AQ1438", "AQ1439")
 zoom_out_stations <- c("Center Bay", "Blandford", "Western Shoal")
 
 if (station %in% zoom_in_stations) {
@@ -161,7 +161,7 @@ ggplot() +
   scale_x_continuous(n.breaks = 4, breaks = waiver()) +
   scale_y_continuous(n.breaks = 4) +
   theme(
-    panel.border = element_rect(colour = "black", fill = NA, size = 1),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
     text = element_text(size = 12),
     axis.title = element_blank()
   )
@@ -180,7 +180,8 @@ k <- k + 1
 
 CMAR collects current data using ADCPs. An ADCP is a hydroacoustic current meter similar to sonar that measures water velocities over a range of depths. These sensors measure sound waves scattered back from moving particles in the water column and apply the Doppler effect to estimate speed and direction. Each ADCP is deployed on the seafloor and can measure water speed throughout the water column (Figure `r k`). ADCPs transmit ultrasonic "pings" of sound at a specific frequency. The pings are measured as they reflect back from particles in the water column. Sound waves reflected from particles moving away from the ADCP have a slightly lower frequency than sound waves reflected from particles moving toward the instrument. The difference in frequencies is called a Doppler shift and is used to calculate particle speed and direction, and likewise, water movement.
 
-![](ADCP%20Schematic.jpg) Figure `r k`: Schematic representation of ADCP deployment (not to scale).
+![](adcp_diagram.png) 
+Figure `r k`: Schematic representation of ADCP deployment (not to scale).
 
 \newpage
 

@@ -6,6 +6,7 @@
 
 library(dplyr)
 library(readr)
+library(stringr)
 library(tidyr)
 
 # import the file exported from open_data_metadata.R --------------------
@@ -44,14 +45,17 @@ links <- read_csv(
 )
 
 reports <- list.files(
-  paste0(path, "/current_reports/final"), pattern = "pdf"
+  paste0(path, "/current_reports/final/uploaded"), pattern = "pdf"
 ) %>%
   data.frame() %>%
   rename(file_name = ".") %>%
-  separate(
-    "file_name",
-    into = c("station", "deployment_date", "deployment_id", NA, NA),
-    sep = "_", remove = FALSE
+  separate("file_name", into = c("depl", NA), sep = -19, remove = FALSE) %>%
+  separate("depl", into = c("depl_location", "deployment_date"), sep = -11) %>%
+  separate("depl_location", into = c("deployment_id", "station"), sep = 6) %>%
+  mutate(
+    deployment_date = str_remove(deployment_date, "_"),
+    deployment_id = str_remove(deployment_id, "_"),
+    station = str_replace_all(station, "_", " ")
   )
 
 # merge files -------------------------------------------------------------

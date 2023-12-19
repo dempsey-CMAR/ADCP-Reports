@@ -1,5 +1,5 @@
-# DATE: 
-# NAME: 
+# DATE:
+# NAME:
 # NOTES:
 
 # Export additional files for Open Data Portal:
@@ -15,7 +15,7 @@ library(readr)
 
 ### update the file name
 path_nsdfa <- file.path(
-  "Y:/coastal_monitoring_program/tracking_sheets/2022-12-19 - NSDFA Tracking Sheet.xlsx"
+  "Y:/coastal_monitoring_program/tracking_sheets/2023-08-21 - NSDFA Tracking Sheet.xlsx"
 )
 
 path_export <- file.path(
